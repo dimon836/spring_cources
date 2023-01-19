@@ -19,10 +19,11 @@ public class JwtProvider {
     private String jwtSecret;
 
     // TimeZone and time for token will be changed here
-    public String generateToken(String userLogin, boolean bool) {
+    // token is true(300), refreshToken is false(600)
+    public String generateToken(String userLogin, boolean tokenType) {
         Date date = Date.from(LocalDateTime
                 .now()
-                .plusMinutes(bool ? 600:300)
+                .plusMinutes(tokenType ? 300:600)
                 .atZone(ZoneId.systemDefault())
                 .toInstant());
         return Jwts.builder()

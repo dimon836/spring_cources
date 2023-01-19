@@ -1,9 +1,12 @@
 package com.example.spring_courses.config;
 
+import com.example.spring_courses.auth.types.AuthRequest;
+import com.example.spring_courses.auth.types.AuthResponse;
+import com.example.spring_courses.auth.types.RegistrationRequest;
 import com.example.spring_courses.config.plugins.EmailAnnotationPlugin;
-import com.example.spring_courses.dto.ApplicationExceptionDto;
-import com.example.spring_courses.dto.TokenDto;
 import com.fasterxml.classmate.TypeResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -11,6 +14,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import springfox.boot.starter.autoconfigure.SpringfoxConfigurationProperties;
+import springfox.documentation.builders.AuthorizationScopeBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.builders.ResponseBuilder;
@@ -22,6 +27,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,10 +40,6 @@ public class SpringFoxConfig implements WebMvcConfigurer {
     @Bean
     public Docket apiDocket(TypeResolver typeResolver) {
         return new Docket(DocumentationType.SWAGGER_2)
-                .additionalModels(
-                        typeResolver.resolve(ApplicationExceptionDto.class),
-                        typeResolver.resolve(TokenDto.class)
-                )
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.example.spring_courses"))
                 .paths(PathSelectors.any())
@@ -49,12 +51,30 @@ public class SpringFoxConfig implements WebMvcConfigurer {
                 .globalResponses(HttpMethod.GET, new ArrayList<>(
                         Arrays.asList(
                                 new ResponseBuilder().code("500")
-                                        .description("500 message").build(),
+                                        .description("[get] 500 message").build(),
                                 new ResponseBuilder().code("403")
-                                        .description("403 message, forbidden!").build()
+                                        .description("[get] 403 message, forbidden!").build(),
+                                new ResponseBuilder().code("400")
+                                        .description("[get] Auth pls before doing that!").build()
                         )
                 ))
-                .directModelSubstitute(LocalDate.class, String.class)
+                .globalResponses(HttpMethod.POST, new ArrayList<>(
+                        Arrays.asList(
+                                new ResponseBuilder().code("500")
+                                        .description("[post] 500 message").build(),
+                                new ResponseBuilder().code("403")
+                                        .description("[post] 403 message, forbidden!").build(),
+                                new ResponseBuilder().code("400")
+                                        .description("[post] Auth pls before doing that!").build()
+                        )
+                ))
+                .additionalModels(
+                        typeResolver.resolve(AuthRequest.class),
+                        typeResolver.resolve(AuthResponse.class),
+                        typeResolver.resolve(RegistrationRequest.class)
+                )
+                .directModelSubstitute(LocalDate.class, java.sql.Date.class)
+                .directModelSubstitute(LocalDateTime.class, java.util.Date.class)
                 .genericModelSubstitutes(ResponseEntity.class);
     }
 
@@ -68,10 +88,11 @@ public class SpringFoxConfig implements WebMvcConfigurer {
     }
 
     private List<SecurityReference> defaultAuth() {
-        AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
+        AuthorizationScope authorizationScope = new AuthorizationScopeBuilder().scope("read").description("read access").build();
         AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
         authorizationScopes[0] = authorizationScope;
-        return List.of(new SecurityReference("JWT", authorizationScopes));
+        SecurityReference securityReference = SecurityReference.builder().reference("test").scopes(authorizationScopes).build();
+        return List.of(securityReference);
     }
 
     private ApiInfo apiInfo() {
@@ -97,6 +118,5 @@ public class SpringFoxConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
-
 
 }

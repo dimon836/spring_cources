@@ -9,13 +9,14 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SecurityScheme(type = SecuritySchemeType.APIKEY, name = "api_key", in = SecuritySchemeIn.HEADER)
-@OpenAPIDefinition( info = @Info(title = "Apply Default Global SecurityScheme in springdoc-openapi", version = "1.0.0"),
-                    security = {@SecurityRequirement(name = "api_key")})
 @SpringBootApplication
+@OpenAPIDefinition( info = @Info(title = "Apply Default Global SecurityScheme in springdoc-openapi", version = "1.0.0", description = "users information"),
+        security = {@SecurityRequirement(name = "api_key")})
+@SecurityScheme(name = "api_key", scheme = "basic", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
 public class SpringCoursesApplication {
     public static void main(String[] args) {
         SpringApplication.run(SpringCoursesApplication.class, args);
     }
 
 }
+

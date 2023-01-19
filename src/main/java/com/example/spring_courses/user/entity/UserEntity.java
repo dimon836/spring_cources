@@ -1,5 +1,6 @@
 package com.example.spring_courses.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +25,13 @@ public class UserEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "first_name")
-    private String firstName;
+    @Column(name = "login")
+    private String login;
+
+    @NotNull
+    @JsonIgnore
+    @Column(name = "password")
+    private String password;
 
     @Column(name = "age")
     @Min(value = 0, message = "age can't be less than 0")
@@ -35,5 +41,10 @@ public class UserEntity {
     @Column(name = "email")
     @Email(regexp=".*@.*\\..*", message = "Email should be valid")
     private String email;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
+    @JoinColumn(name = "role_id")
+    private RoleEntity roleEntity;
 
 }

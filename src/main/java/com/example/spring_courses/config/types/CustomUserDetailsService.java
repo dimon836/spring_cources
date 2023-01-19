@@ -1,22 +1,22 @@
 package com.example.spring_courses.config.types;
 
-import com.example.spring_courses.user.SwaggerUserService;
-import com.example.spring_courses.user.entity.SwaggerUserEntity;
+import com.example.spring_courses.user.UserService;
+import com.example.spring_courses.user.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CustomUserDetailsService {
-    private final SwaggerUserService swaggerUserService;
+    private final UserService userService;
 
     @Autowired
-    public CustomUserDetailsService(SwaggerUserService swaggerUserService) {
-        this.swaggerUserService = swaggerUserService;
+    public CustomUserDetailsService(UserService userService) {
+        this.userService = userService;
     }
 
     public CustomUserDetails loadUserByLogin(String login) {
-        SwaggerUserEntity userEntity = swaggerUserService.findByLogin(login);
-        return CustomUserDetails.fromSwaggerUserEntityToCustomUserDetails(userEntity);
+        UserEntity userEntity = userService.findByLogin(login);
+        return CustomUserDetails.fromUserEntityToCustomUserDetails(userEntity);
     }
 
 }

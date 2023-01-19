@@ -1,6 +1,6 @@
 package com.example.spring_courses.config.types;
 
-import com.example.spring_courses.user.entity.SwaggerUserEntity;
+import com.example.spring_courses.user.entity.UserEntity;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,12 +19,12 @@ public class CustomUserDetails implements UserDetails {
     private String password;
     private Collection<? extends GrantedAuthority> grantedAuthorities;
 
-    public static CustomUserDetails fromSwaggerUserEntityToCustomUserDetails(SwaggerUserEntity swaggerUserEntity) {
+    public static CustomUserDetails fromUserEntityToCustomUserDetails(UserEntity userEntity) {
         CustomUserDetails customUserDetails = new CustomUserDetails();
-        customUserDetails.id = swaggerUserEntity.getId();
-        customUserDetails.username = swaggerUserEntity.getLogin();
-        customUserDetails.password = swaggerUserEntity.getPassword();
-        customUserDetails.grantedAuthorities = Collections.singletonList(new SimpleGrantedAuthority(swaggerUserEntity.getRoleEntity().getName()));
+        customUserDetails.id = userEntity.getId();
+        customUserDetails.username = userEntity.getLogin();
+        customUserDetails.password = userEntity.getPassword();
+        customUserDetails.grantedAuthorities = Collections.singletonList(new SimpleGrantedAuthority(userEntity.getRoleEntity().getName()));
         return customUserDetails;
     }
 
