@@ -14,20 +14,20 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import springfox.boot.starter.autoconfigure.SpringfoxConfigurationProperties;
-import springfox.documentation.builders.AuthorizationScopeBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.builders.ResponseBuilder;
 import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
-import springfox.documentation.spring.data.rest.configuration.SpringDataRestConfiguration;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.awt.print.Pageable;
+import java.util.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,7 +35,7 @@ import java.util.List;
 
 @Configuration
 @EnableSwagger2
-@Import(SpringDataRestConfiguration.class)
+@Import(springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration.class)
 public class SpringFoxConfig implements WebMvcConfigurer {
     @Bean
     public Docket apiDocket(TypeResolver typeResolver) {
@@ -47,6 +47,7 @@ public class SpringFoxConfig implements WebMvcConfigurer {
                 .securityContexts(Collections.singletonList(securityContext()))
                 .securitySchemes(List.of(apiKey()))
                 .apiInfo(apiInfo())
+                .forCodeGeneration(true)
                 .useDefaultResponseMessages(false)
                 .globalResponses(HttpMethod.GET, new ArrayList<>(
                         Arrays.asList(
@@ -68,13 +69,16 @@ public class SpringFoxConfig implements WebMvcConfigurer {
                                         .description("[post] Auth pls before doing that!").build()
                         )
                 ))
+                .ignoredParameterTypes(Pageable.class)
+                .ignoredParameterTypes(java.sql.Date.class)
                 .additionalModels(
                         typeResolver.resolve(AuthRequest.class),
                         typeResolver.resolve(AuthResponse.class),
                         typeResolver.resolve(RegistrationRequest.class)
                 )
                 .directModelSubstitute(LocalDate.class, java.sql.Date.class)
-                .directModelSubstitute(LocalDateTime.class, java.util.Date.class)
+                .directModelSubstitute(ZonedDateTime.class, Date.class)
+                .directModelSubstitute(LocalDateTime.class, Date.class)
                 .genericModelSubstitutes(ResponseEntity.class);
     }
 
@@ -88,11 +92,11 @@ public class SpringFoxConfig implements WebMvcConfigurer {
     }
 
     private List<SecurityReference> defaultAuth() {
-        AuthorizationScope authorizationScope = new AuthorizationScopeBuilder().scope("read").description("read access").build();
+        AuthorizationScope authorizationScope
+                = new AuthorizationScope("global", "accessEverything");
         AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
         authorizationScopes[0] = authorizationScope;
-        SecurityReference securityReference = SecurityReference.builder().reference("test").scopes(authorizationScopes).build();
-        return List.of(securityReference);
+        return List.of(new SecurityReference("JWT", authorizationScopes));
     }
 
     private ApiInfo apiInfo() {
